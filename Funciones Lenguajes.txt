@@ -1,0 +1,118 @@
+Registrar Devoluciones
+CREATE PROCEDURE registrarDevolucion(
+    IN p_idPrestamo INT,
+    IN p_fechaDevolucion DATE
+)
+IS
+BEGIN
+    -- Actualizar la fecha de devolución y el estado del préstamo
+    UPDATE Prestamos
+    SET Fecha_devolucion_real = p_fechaDevolucion, Estado_prestamo = 'devuelto'
+    WHERE ID_prestamo = p_idPrestamo;
+END;
+
+
+Registrar Multa
+CREATE PROCEDURE registrarMulta(
+    IN p_idUsuario INT,
+    IN p_monto NUMBER,
+    IN p_fechaVencimiento DATE,
+    IN p_estadoMulta VARCHAR(20)
+)
+IS
+BEGIN
+    -- Insertar nueva multa
+    INSERT INTO Multas (ID_usuario, Monto, Fecha_vencimiento, Estado_multa)
+    VALUES (p_idUsuario, p_monto, p_fechaVencimiento, p_estadoMulta);
+END;
+
+
+Obtener Historial de Prestamos 
+CREATE FUNCTION obtenerHistorialPrestamos(
+    IN p_idUsuario INT
+) RETURN SYS_REFCURSOR
+IS
+    v_cursor SYS_REFCURSOR;
+BEGIN
+    -- Devolver el historial de préstamos del usuario
+    OPEN v_cursor FOR
+        SELECT * FROM Historial_Prestamos WHERE ID_usuario = p_idUsuario;
+    RETURN v_cursor;
+END obtenerHistorialPrestamos;
+
+Agregar Editorial
+CREATE PROCEDURE agregarEditorial(
+    IN p_nombreEditorial VARCHAR2,
+    IN p_direccionEditorial VARCHAR2,
+    IN p_infoContactoEditorial VARCHAR2
+)
+IS
+BEGIN
+    -- Insertar nueva editorial
+    INSERT INTO Editoriales (Nombre_editorial, Direccion_editorial, Informacion_contacto_editorial)
+    VALUES (p_nombreEditorial, p_direccionEditorial, p_infoContactoEditorial);
+END;
+
+Asociar Editorial a Libro
+CREATE PROCEDURE asociarEditorialLibro(
+    IN p_idLibro INT,
+    IN p_idEditorial INT
+)
+IS
+BEGIN
+    -- Asociar libro a editorial
+    INSERT INTO Editoriales_Libros (ID_libro, ID_editorial)
+    VALUES (p_idLibro, p_idEditorial);
+END;
+
+Agregar Idioma
+CREATE PROCEDURE agregarIdioma(
+    IN p_nombreIdioma VARCHAR2,
+    IN p_descripcionIdioma VARCHAR2
+)
+IS
+BEGIN
+    -- Insertar nuevo idioma
+    INSERT INTO Idiomas (Nombre_idioma, Descripcion_idioma)
+    VALUES (p_nombreIdioma, p_descripcionIdioma);
+END;
+
+Asociar Idioma a Libro
+CREATE PROCEDURE asociarIdiomaLibro(
+    IN p_idLibro INT,
+    IN p_idIdioma INT
+)
+IS
+BEGIN
+    -- Asociar libro a idioma
+    INSERT INTO Idiomas_Libros (ID_libro, ID_idioma)
+    VALUES (p_idLibro, p_idIdioma);
+END;
+
+Notificar Traspaso
+CREATE PROCEDURE notificarTraspaso(
+    IN p_idUsuarioAntiguo INT,
+    IN p_idUsuarioNuevo INT,
+    IN p_idLibro INT
+)
+IS
+    v_correoUsuarioAntiguo VARCHAR2(100);
+    v_correoUsuarioNuevo VARCHAR2(100);
+    v_asunto VARCHAR2(255);
+    v_mensaje VARCHAR2(1000);
+BEGIN
+    -- Obtener correos electrónicos de los usuarios
+    SELECT Correo_electronico INTO v_correoUsuarioAntiguo FROM Usuarios WHERE ID_usuario = p_idUsuarioAntiguo;
+    SELECT Correo_electronico INTO v_correoUsuarioNuevo FROM Usuarios WHERE ID_usuario = p_idUsuarioNuevo;
+
+    -- Definir el asunto y el mensaje de la notificación
+    v_asunto := 'Notificación de Traspaso de Libro';
+    v_mensaje := 'El libro con ID ' || p_idLibro || ' ha sido traspasado de su cuenta a la cuenta de otro usuario.';
+
+    -- Enviar notificación por correo electrónico al usuario antiguo
+    SEND_EMAIL(v_correoUsuarioAntiguo, v_asunto, v_mensaje);
+
+    -- Enviar notificación por correo electrónico al usuario nuevo
+    SEND_EMAIL(v_correoUsuarioNuevo, v_asunto, v_mensaje);
+END;
+/
