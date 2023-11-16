@@ -1,0 +1,55 @@
+CREATE OR REPLACE PROCEDURE ObtenerTodosLosLibros (OUT_CURSOR OUT SYS_REFCURSOR) AS
+BEGIN
+    OPEN OUT_CURSOR FOR
+    SELECT * FROM Libros;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE ObtenerDetallesLibroPorID (LIBRO_ID NUMBER, OUT_CURSOR OUT SYS_REFCURSOR) AS
+BEGIN
+    OPEN OUT_CURSOR FOR
+    SELECT * FROM Libros WHERE ID_libro = LIBRO_ID;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE ObtenerPrestamosPendientes (USUARIO_ID NUMBER, OUT_CURSOR OUT SYS_REFCURSOR) AS
+BEGIN
+    OPEN OUT_CURSOR FOR
+    SELECT * FROM Prestamos WHERE ID_usuario = USUARIO_ID AND Estado_prestamo = 'Pendiente';
+END;
+/
+
+CREATE OR REPLACE PROCEDURE ObtenerMultasUsuario (USUARIO_ID NUMBER, OUT_CURSOR OUT SYS_REFCURSOR) AS
+BEGIN
+    OPEN OUT_CURSOR FOR
+    SELECT * FROM Multas WHERE ID_usuario = USUARIO_ID;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE ObtenerLibrosDisponibles (OUT_CURSOR OUT SYS_REFCURSOR) AS
+BEGIN
+    OPEN OUT_CURSOR FOR
+    SELECT * FROM Libros WHERE Disponibilidad = 1;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE ObtenerHistorialPrestamosUsuario (USUARIO_ID NUMBER, OUT_CURSOR OUT SYS_REFCURSOR) AS
+BEGIN
+    OPEN OUT_CURSOR FOR
+    SELECT * FROM Historial_Prestamos WHERE ID_prestamo IN (SELECT ID_prestamo FROM Prestamos WHERE ID_usuario = USUARIO_ID);
+END;
+/
+
+CREATE OR REPLACE PROCEDURE ObtenerAutoresYLibros (OUT_CURSOR OUT SYS_REFCURSOR) AS
+BEGIN
+    OPEN OUT_CURSOR FOR
+    SELECT Autores.Nombre_autor, Libros.Titulo FROM Autores, Libros_Autores, Libros WHERE Autores.ID_autor = Libros_Autores.ID_autor AND Libros_Autores.ID_libro = Libros.ID_libro;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE ObtenerGenerosYLibros (OUT_CURSOR OUT SYS_REFCURSOR) AS
+BEGIN
+    OPEN OUT_CURSOR FOR
+    SELECT Generos.Nombre_genero, Libros.Titulo FROM Generos, Libros_Generos, Libros WHERE Generos.ID_genero = Libros_Generos.ID_genero AND Libros_Generos.ID_libro = Libros.ID_libro;
+END;
+/
